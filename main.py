@@ -28,6 +28,7 @@ def home():
       return render_template('index.html')
 
 @app.route('/predict', methods=['POST'])
+def predict():
     def generate_predictions():
         audio_bytes = file.read()
         audio = convert_audio_to_wav(audio_bytes)
@@ -57,25 +58,25 @@ def home():
     # Stream response back to the client
     return Response(generate_predictions(), content_type='text/html')
 
-def generate_batched_predictions(chunks):
-    # Prepare all chunks for inference
-    buffers = [BytesIO() for _ in chunks]
-    for buffer, chunk in zip(buffers, chunks):
-        chunk.export(buffer, format="wav")
-        buffer.seek(0)
-    
-    # Perform inference in batches
-    predictions = classifier([buffer.read() for buffer in buffers], top_k=1)
-    
-    # Don't forget to close the buffers
-    for buffer in buffers:
-        buffer.close()
-    
-    return predictions
+
 
 @app.route('/batch_predict', methods=['POST'])
 def batch_predict():
-    # Your existing file handling code here
+    def generate_batched_predictions(chunks):
+        # Prepare all chunks for inference
+        buffers = [BytesIO() for _ in chunks]
+        for buffer, chunk in zip(buffers, chunks):
+            chunk.export(buffer, format="wav")
+            buffer.seek(0)
+        
+        # Perform inference in batches
+        predictions = classifier([buffer.read() for buffer in buffers], top_k=1)
+        
+        # Don't forget to close the buffers
+        for buffer in buffers:
+            buffer.close()
+        
+        return predictions
 
     audio_bytes = file.read()
     audio = convert_audio_to_wav(audio_bytes)
