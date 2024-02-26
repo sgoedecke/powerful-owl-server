@@ -30,6 +30,7 @@ def home():
 @app.route('/predict', methods=['POST'])
 def predict():
     def generate_predictions():
+        file = request.files['file']
         audio_bytes = file.read()
         audio = convert_audio_to_wav(audio_bytes)
         chunks = chunk_audio(audio)
@@ -78,6 +79,7 @@ def batch_predict():
         
         return predictions
 
+    file = request.files['file']
     audio_bytes = file.read()
     audio = convert_audio_to_wav(audio_bytes)
     chunks = chunk_audio(audio)
