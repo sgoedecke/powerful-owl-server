@@ -33,9 +33,8 @@ def home():
 
 @app.route('/stream_predict', methods=['POST'])
 def stream_predict():
-    def generate_predictions():
+    def generate_predictions(file):
         print("Starting inference...")
-        file = request.files['file']
         audio_bytes = file.read()
         audio = convert_audio_to_wav(audio_bytes)
         chunks = chunk_audio(audio)
@@ -64,7 +63,7 @@ def stream_predict():
                 yield f"<p>No owl sound detected from {start_time} to {end_time} seconds.</p>"
 
     # Stream response back to the client
-    resp = Response(generate_predictions(), mimetype='text/event-stream')
+    resp = Response(generate_predictions(request.files['file']), mimetype='text/event-stream')
     resp.headers['X-Accel-Buffering'] = 'no'
     resp.headers['Cache-Control'] = 'no-cache'
     return resp
