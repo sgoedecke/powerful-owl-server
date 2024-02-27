@@ -51,31 +51,32 @@
 
     function renderDetections() {
         console.log(detections, raw_chunks, chunk_count);
-        let results = document.getElementById('results')
+
+        html = ""
 
         // Print summary
-        results.innerHTML = '<p>';
+        html = '<p>';
         raw_chunks.forEach(chunk => {
             if (chunk.detected) {
-                results.innerHtml += "🟩"
+                html += "🟩"
             } else {
-                results.innerHtml += "🟥"
+                html += "🟥"
             }
         });
 
         for (let i = 0; i < (chunk_count - raw_chunks.length); i++) {
-            results.innerHtml += "⬛"
+            html += "⬛"
         }
-        results.innerHtml += "</p>";
+        html += "</p>";
 
         detections.forEach(detection => {
             if (detection.detected) {
-                results.innerHtml += "<p style='color: green'>Owls detected at " + detection.start_time + " to " + detection.end_time + " seconds</p>"
+                html += "<p style='color: green'>Owls detected at " + detection.start_time + " to " + detection.end_time + " seconds</p>"
             } else {
-                results.innerHtml += "<p>No owls detected at " + detection.start_time + " to " + detection.end_time + " seconds</p>"
+                html += "<p>No owls detected at " + detection.start_time + " to " + detection.end_time + " seconds</p>"
             }
         });
-        console.log(results.innerHtml, document.getElementById('results'));
+        document.getElementById('results').innerHTML = html;
     }
 
     function readStream(reader) {
