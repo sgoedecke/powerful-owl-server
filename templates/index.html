@@ -36,7 +36,7 @@
             if (!response.ok) {
                 throw new Error('Network response was not ok');
             }
-            document.getElementById('results').innerHTML = '';
+            // document.getElementById('results').innerHTML = '';
             return response.body;
         })
         .then(stream => {
@@ -75,7 +75,7 @@
                 results.innerHtml += "<p>No owls detected at " + detection.start_time + " to " + detection.end_time + " seconds</p>"
             }
         });
-        console.log(results.innerHtml);
+        console.log(results.innerHtml, document.getElementById('results'));
     }
 
     function readStream(reader) {
