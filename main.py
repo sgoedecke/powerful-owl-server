@@ -11,10 +11,10 @@ app.config['MAX_CONTENT_LENGTH'] = 500 * 1024 * 1024
 
 # Load your model
 model_name = "sgoedecke/wav2vec2_owl_classifier_v3"
-# classifier = pipeline("audio-classification", model=model_name)
+classifier = pipeline("audio-classification", model=model_name)
 
-hf_client = InferenceClient(model=model_name)
-classifier = hf_client.audio_classification
+# hf_client = InferenceClient(model=model_name)
+# classifier = hf_client.audio_classification
 
 def convert_audio_to_wav(audio_bytes):
     # Load audio file from bytes and convert to WAV with 16kHz
