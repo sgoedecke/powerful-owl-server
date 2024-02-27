@@ -4,6 +4,7 @@ from pydub import AudioSegment
 from io import BytesIO
 import os
 from huggingface_hub import InferenceClient
+import json
 
 app = Flask(__name__)
 app.config['MAX_CONTENT_LENGTH'] = 500 * 1024 * 1024
@@ -57,9 +58,17 @@ def stream_predict():
 
             # Yield predictions for streaming
             if isinstance(chunk_prediction, list) and chunk_prediction[0]['label'] == 'owl':
-                yield f"<p style='color: green;'>Owl sound detected from {start_time} to {end_time} seconds.</p>"
+                yield json.dumps({
+                    "detected": True,
+                    "start_time": start_time,
+                    "end_time": end_time,
+                }) + "\n\n"  # Adding \n\n for easier parsing and to distinguish between messages
             else:
-                yield f"<p>No owl sound detected from {start_time} to {end_time} seconds.</p>"
+                yield json.dumps({
+                    "detected": False,
+                    "start_time": start_time,
+                    "end_time": end_time,
+                }) + "\n\n"
 
     # Stream response back to the client
     resp = Response(generate_predictions(request.files['file'].read()), mimetype='text/event-stream')

@@ -21,6 +21,8 @@
         submitForm(formData);
     });
 
+    let detections = [];
+
     function submitForm(formData) {
         document.getElementById('results').innerHTML = 'Loading...';
 
@@ -45,23 +47,76 @@
         });
     }
 
+    function renderDetections() {
+        let results = document.getElementById('results')
+        results.innerHTML = '';
+        detections.forEach(detection => {
+            if (detection.detected) {
+                results.innerHtml += "<p style='color: green'>"
+                } else {
+                results.innerHtml += "<p style='color: red'>"
+                }
+            results.innerHTML += JSON.stringify(detection) + "</p>";
+        });
+    }
+
     function readStream(reader) {
         reader.read().then(({ done, value }) => {
             if (done) {
                 console.log('Stream complete');
+                document.getElementById('results').innerHTML += "<p>Done processing!</p>";
                 return;
             }
             // Process the chunk (value)
-            // For text streams, you can decode the value to a string
             const decoder = new TextDecoder();
             const text = decoder.decode(value);
+
+            try {
+                const jsonObj = JSON.parse(text);
+                detections.push(jsonObj);
+            } catch (e) {
+                console.error("Error parsing JSON:", e);
+            }
+
+            detections = mergeEvents(detections);
+            renderDetections(detetions)
+
             console.log(text);
-            // Optionally, update the DOM here
-            document.getElementById('results').innerHTML += text;
             // Read the next chunk
             readStream(reader);
         });
     }
+
+    function mergeEvents(events) {
+        let mergedEvents = [];
+        let currentEvent = null;
+
+        events.forEach(event => {
+            // Check if we have a current event to possibly merge with
+            if (currentEvent) {
+                // Check if the current event can be merged with this one
+                if (currentEvent.detected === event.detected && currentEvent.end_time === event.start_time) {
+                    // Merge this event by extending the end_time of the current event
+                    currentEvent.end_time = event.end_time;
+                } else {
+                    // The current event cannot be merged; add it to the mergedEvents and start a new current event
+                    mergedEvents.push(currentEvent);
+                    currentEvent = event;
+                }
+            } else {
+                // This is the first event or after a non-mergeable event
+                currentEvent = event;
+            }
+        });
+
+        // Don't forget to add the last event if it exists
+        if (currentEvent) {
+            mergedEvents.push(currentEvent);
+        }
+
+        return mergedEvents;
+    }
+
   </script>
   </body>
 </html>
