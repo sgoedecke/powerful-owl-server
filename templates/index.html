@@ -26,6 +26,9 @@
     let chunk_count = 0;
 
     function submitForm(formData) {
+        detections = [];
+        raw_chunks = []
+        chunk_count = 0;
         document.getElementById('results').innerHTML = 'Chunking audio file...';
 
         fetch('/stream_predict', {
@@ -60,7 +63,7 @@
             if (chunk.detected) {
                 html += "🟩"
             } else {
-                html += "🟥"
+                html += "⬜"
             }
         });
 
