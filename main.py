@@ -48,7 +48,7 @@ def stream_predict():
             buffer.seek(0)
 
             # Perform inference
-            chunk_prediction = classifier(buffer.read(), top_k=1)
+            chunk_prediction = classifier(buffer.read())#, top_k=1)
             buffer.close()  # Close buffer after reading
 
             start_time = i * chunk_length_seconds
