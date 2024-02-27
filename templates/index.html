@@ -22,6 +22,8 @@
     });
 
     let detections = [];
+    let raw_chunks = [];
+    let chunk_count = 0;
 
     function submitForm(formData) {
         document.getElementById('results').innerHTML = 'Chunking audio file...';
@@ -49,14 +51,28 @@
 
     function renderDetections() {
         let results = document.getElementById('results')
-        results.innerHTML = '';
+
+        // Print summary
+        results.innerHTML = '<p>';
+        raw_chunks.forEach(chunk => {
+            if (chunk.detected) {
+                results.innerHtml += "🟩"
+            } else {
+                results.innerHtml += "🟥"
+            }
+        });
+
+        for (let i = 0; i < (chunk_count - raw_chunks.length); i++) {
+            results.innerHtml += "⬛"
+        }
+        results.innerHtml += "</p>";
+
         detections.forEach(detection => {
             if (detection.detected) {
-                results.innerHtml += "<p style='color: green'>"
-                } else {
-                results.innerHtml += "<p style='color: red'>"
-                }
-            results.innerHTML += JSON.stringify(detection) + "</p>";
+                results.innerHtml += "<p style='color: green'>Owls detected at " + detection.start_time + " to " + detection.end_time + " seconds</p>"
+            } else {
+                results.innerHtml += "<p>No owls detected at " + detection.start_time + " to " + detection.end_time + " seconds</p>"
+            }
         });
     }
 
@@ -74,6 +90,8 @@
             try {
                 const jsonObj = JSON.parse(text);
                 detections.push(jsonObj);
+                raw_chunks.push(jsonObj);
+                chunk_count = jsonObj.chunk_count;
             } catch (e) {
                 console.error("Error parsing JSON:", e);
             }

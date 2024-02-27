@@ -62,12 +62,14 @@ def stream_predict():
                     "detected": True,
                     "start_time": start_time,
                     "end_time": end_time,
+                    "chunk_count": len(chunks),
                 }) + "\n\n"  # Adding \n\n for easier parsing and to distinguish between messages
             else:
                 yield json.dumps({
                     "detected": False,
                     "start_time": start_time,
                     "end_time": end_time,
+                    "chunk_count": len(chunks),
                 }) + "\n\n"
 
     # Stream response back to the client
