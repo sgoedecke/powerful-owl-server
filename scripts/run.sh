@@ -1,3 +1,6 @@
 pkill gunicorn
 git pull
-gunicorn --bind 0.0.0.0:80 main:app --daemon
+gunicorn --bind 0.0.0.0:443 --certfile /etc/letsencrypt/live/ninoxstrenua.site/fullchain.pem --keyfile /etc/letsencrypt/live/ninoxstrenua.site/privkey.pem --daemon
+
+# Certificate is saved at: /etc/letsencrypt/live/ninoxstrenua.site/fullchain.pem
+# Key is saved at:         /etc/letsencrypt/live/ninoxstrenua.site/privkey.pem
