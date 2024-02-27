@@ -4,12 +4,12 @@
   <head>
     <title>Powerful Owl Finder</title>
   </head>
-  <body>
+  <body style="padding-left: 20px; padding-right: 20px;">
     <h1>Listening for Powerful Owls? 🦉</h1>
     <form id="owlsForm" action="/stream_predict" method="post" enctype="multipart/form-data">
         <label for="file">Choose an audio file:</label>
         <input type="file" id="file" name="file" accept="audio/*">
-        <input type="submit" value="Upload and look for owls (stream response, currently broken)">
+        <input type="submit" value="Upload and look for owls">
     </form>
     <hr>
     <div id="results"></div>
@@ -24,7 +24,7 @@
     let detections = [];
 
     function submitForm(formData) {
-        document.getElementById('results').innerHTML = 'Loading...';
+        document.getElementById('results').innerHTML = 'Chunking audio file...';
 
         fetch('/stream_predict', {
             method: 'POST',
@@ -79,7 +79,7 @@
             }
 
             detections = mergeEvents(detections);
-            renderDetections(detetions)
+            renderDetections(detections)
 
             console.log(text);
             // Read the next chunk
