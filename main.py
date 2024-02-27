@@ -41,6 +41,7 @@ def stream_predict():
 
         chunk_length_seconds = 5  # Duration of each audio chunk
 
+        print("Starting inference on " + str(len(chunks)) + "...")
         for i, chunk in enumerate(chunks):
             # Export chunk to bytes
             buffer = BytesIO()
@@ -53,6 +54,7 @@ def stream_predict():
 
             start_time = i * chunk_length_seconds
             end_time = start_time + chunk_length_seconds
+            print(f"Predicted {chunk_prediction} from {start_time} to {end_time} seconds.")
 
             # Yield predictions for streaming
             if isinstance(chunk_prediction, list) and chunk_prediction[0]['label'] == 'owl':
