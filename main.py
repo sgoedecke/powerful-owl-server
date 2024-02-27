@@ -34,6 +34,7 @@ def home():
 @app.route('/stream_predict', methods=['POST'])
 def stream_predict():
     def generate_predictions():
+        print("Starting inference...")
         file = request.files['file']
         audio_bytes = file.read()
         audio = convert_audio_to_wav(audio_bytes)
