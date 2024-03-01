@@ -6,17 +6,17 @@ import os
 from huggingface_hub import InferenceClient
 import json
 import numpy as np
+from transformers import AutoModelForAudioClassification, Wav2Vec2Processor
+
 
 app = Flask(__name__)
 app.config['MAX_CONTENT_LENGTH'] = 500 * 1024 * 1024
 
 
 # Load your model
-fast_model_name = "sgoedecke/wav2vec2_owl_classifier_sew_d" # faster, smaller
-classifier = pipeline("audio-classification", model=fast_model_name)
-
-# hf_client = InferenceClient(model=model_name)
-# classifier = hf_client.audio_classification
+model_name = "sgoedecke/wav2vec2_owl_classifier_sew_d" # faster, smaller
+model = AutoModelForAudioClassification.from_pretrained(model_name)
+processor = Wav2Vec2Processor.from_pretrained("facebook/wav2vec2-base")
 
 def convert_audio_to_wav(audio_bytes):
     # Load audio file from bytes and convert to WAV with 16kHz
