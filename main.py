@@ -39,14 +39,17 @@ def stream_predict():
         samples = samples.reshape(-1, 80000)  # Reshape samples into 5-second chunks
         batch_size = 30
         total_batches = len(samples) // batch_size + (1 if len(samples) % batch_size else 0)  # Calculate total number of batches
-
+        print("Batching...")
         for batch_index in range(total_batches):
             start_index = batch_index * batch_size
             end_index = start_index + batch_size
             inputs = processor(samples[start_index:end_index], sampling_rate=16000, return_tensors="pt", padding=True)
+            print("Done processing batch...")
 
             with torch.no_grad():  # Skip calculating gradients in the forward pass
                 logits = model(inputs.input_values).logits
+                print("Calculated logits...")
+                print(logits)
                 for i, logit in enumerate(logits):
                     label = "owl" if logit[0] > logit[1] else "not_owl"
                     start_time = i * 5
