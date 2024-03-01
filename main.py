@@ -62,7 +62,7 @@ def stream_predict():
                             "start_time": start_time,
                             "end_time": end_time,
                             "chunk_count": total_batches * 6,
-                        }) + "\n\n"  # Adding \n\n for easier parsing and to distinguish between messages
+                        })
                     else:
                         print("Yielding not_owl")
                         yield json.dumps({
@@ -70,7 +70,7 @@ def stream_predict():
                             "start_time": start_time,
                             "end_time": end_time,
                             "chunk_count": total_batches * 6,
-                        }) + "\n\n"
+                        })
 
     # Stream response back to the client
     resp = Response(generate_predictions_batched(request.files['file'].read()), mimetype='text/event-stream')
