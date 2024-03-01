@@ -7,7 +7,7 @@ from huggingface_hub import InferenceClient
 import json
 import numpy as np
 from transformers import AutoModelForAudioClassification, Wav2Vec2Processor
-
+import torch
 
 app = Flask(__name__)
 app.config['MAX_CONTENT_LENGTH'] = 500 * 1024 * 1024
@@ -23,11 +23,6 @@ def convert_audio_to_wav(audio_bytes):
     audio = AudioSegment.from_file(BytesIO(audio_bytes))
     audio = audio.set_frame_rate(16000).set_channels(1)
     return audio
-
-def chunk_audio(audio, chunk_length_ms=5000):
-    # Chunk audio into 5-second blocks
-    chunks = [audio[i:i+chunk_length_ms] for i in range(0, len(audio), chunk_length_ms)]
-    return chunks
 
 @app.route('/', methods=['GET'])
 def home():

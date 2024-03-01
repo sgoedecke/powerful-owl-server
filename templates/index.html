@@ -30,7 +30,7 @@
         detections = [];
         raw_chunks = []
         chunk_count = 0;
-        document.getElementById('results').innerHTML = 'Chunking audio file...';
+        document.getElementById('results').innerHTML = 'Uploading audio file...';
 
         fetch('/stream_predict', {
             method: 'POST',
