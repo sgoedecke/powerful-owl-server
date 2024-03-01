@@ -12,7 +12,7 @@ app.config['MAX_CONTENT_LENGTH'] = 500 * 1024 * 1024
 
 # Load your model
 # model_name = "sgoedecke/wav2vec2_owl_classifier_v3"
-model_name = "sgoedecke/wav2vec2_owl_classifier_sew_d"
+model_name = "sgoedecke/wav2vec2_owl_classifier_sew_d" # faster, smaller
 classifier = pipeline("audio-classification", model=model_name)
 
 # hf_client = InferenceClient(model=model_name)
