@@ -44,12 +44,13 @@ def home():
 def stream_predict():
     print("Beginning request...")
       # This is a file-like object.
-    print("got file...")
 
-    def generate_predictions_batched(file):
+    def generate_predictions_batched():
         print("Loading into tmp file...")
         # Create a temporary file and write the uploaded file's data to it
         file = request.files['file']
+        print("got file...")
+
         with tempfile.NamedTemporaryFile(delete=True, suffix='.wav') as tmp:
             file.save(tmp.name)  # Save the uploaded file's data to the temporary file
             tmp.flush()  # Ensure all data is written to disk
@@ -86,7 +87,7 @@ def stream_predict():
                     }) + "\n\n"
 
     # Stream response back to the client
-    resp = Response(generate_predictions_batched(file), mimetype='text/event-stream')
+    resp = Response(generate_predictions_batched(), mimetype='text/event-stream')
     resp.headers['X-Accel-Buffering'] = 'no'
     resp.headers['Cache-Control'] = 'no-cache'
     return resp
