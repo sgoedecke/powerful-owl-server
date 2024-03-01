@@ -11,9 +11,10 @@ app.config['MAX_CONTENT_LENGTH'] = 500 * 1024 * 1024
 
 
 # Load your model
-# model_name = "sgoedecke/wav2vec2_owl_classifier_v3"
-model_name = "sgoedecke/wav2vec2_owl_classifier_sew_d" # faster, smaller
-classifier = pipeline("audio-classification", model=model_name)
+slow_model_name = "sgoedecke/wav2vec2_owl_classifier_v3"
+fast_model_name = "sgoedecke/wav2vec2_owl_classifier_sew_d" # faster, smaller
+slow_classifier = pipeline("audio-classification", model=slow_model_name)
+fast_classifier = pipeline("audio-classification", model=fast_model_name)
 
 # hf_client = InferenceClient(model=model_name)
 # classifier = hf_client.audio_classification
@@ -35,6 +36,9 @@ def home():
 
 @app.route('/stream_predict', methods=['POST'])
 def stream_predict():
+    fast = request.form.get('fast', 'false') == 'true'
+    classifier = fast_classifier if fast else slow_classifier
+
     def generate_predictions(audio_bytes):
         print("Starting inference...")
         audio = convert_audio_to_wav(audio_bytes)

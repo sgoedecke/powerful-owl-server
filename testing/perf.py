@@ -8,7 +8,9 @@ import time
 
 
 # Load your model
-model_name = "sgoedecke/wav2vec2_owl_classifier_v3"
+# model_name = "sgoedecke/wav2vec2_owl_classifier_v3"
+model_name = "sgoedecke/wav2vec2_owl_classifier_sew_d" # faster, smaller
+
 classifier = pipeline("audio-classification", model=model_name)
 
 # hf_client = InferenceClient(model=model_name)
@@ -26,6 +28,7 @@ def chunk_audio(audio, chunk_length_ms=5000):
     return chunks
 
 #21s
+#8.8s for sew-d
 def generate_predictions(audio_bytes):
     ts_start = time.time()
     audio = convert_audio_to_wav(audio_bytes)

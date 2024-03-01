@@ -8,7 +8,11 @@
     <h1>Listening for Powerful Owls? 🦉</h1>
     <form id="owlsForm" action="/stream_predict" method="post" enctype="multipart/form-data">
         <label for="file">Choose an audio file:</label>
-        <input type="file" id="file" name="file" accept="audio/*">
+
+        <input type="checkbox" id="fast" name="fast" value="true">
+        <label for="fast">Use faster and more approximate model</label><br>
+
+        <input type="file" id="file" name="file" accept="/">
         <input type="submit" value="Upload and look for owls">
     </form>
     <hr>
