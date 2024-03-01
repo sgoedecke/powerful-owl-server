@@ -38,25 +38,21 @@ def convert_audio_to_wav_librosa(audio_bytes, target_sr=16000):
 def home():
       return render_template('index.html')
 
+
 @app.route('/stream_predict', methods=['POST'])
 def stream_predict():
-    def generate_predictions_batched(audio_bytes):
-        raw_bytes = BytesIO(audio_bytes)
+    file = request.files['file']  # This is a file-like object.
+    
+    def generate_predictions_batched(file_stream):
         print("Loading...")
 
-        audio, _ = librosa.load(raw_bytes, sr=16000, mono=True, dtype=np.float32)
-        num_elements_to_keep = len(audio) - (len(audio) % 80000) # trim to nearest 5 seconds
+        # Load directly from the file-like object without reading into memory
+        audio, _ = librosa.load(file_stream, sr=16000, mono=True, dtype=np.float32)
+        num_elements_to_keep = len(audio) - (len(audio) % 80000)  # Trim to nearest 5 seconds
         audio = audio[:num_elements_to_keep]
         print("Reshaping...")
 
-        samples = audio.reshape(-1, 80000) # Reshape samples into 5-second chunks
-
-        # audio = convert_audio_to_wav(audio_bytes)
-        # samples = np.array(audio.get_array_of_samples())
-        # samples = samples.astype(np.float32) / 2**15
-        # num_elements_to_keep = len(samples) - (len(samples) % 80000)  # 5-second chunks
-        # samples = samples[:num_elements_to_keep]
-        # samples = samples.reshape(-1, 80000)  # Reshape samples into 5-second chunks
+        samples = audio.reshape(-1, 80000)  # Reshape samples into 5-second chunks
         batch_size = 30
         total_batches = len(samples) // batch_size + (1 if len(samples) % batch_size else 0)  # Calculate total number of batches
         print("Batching...")
@@ -72,28 +68,18 @@ def stream_predict():
                 print(logits)
                 for i, logit in enumerate(logits):
                     label = "owl" if logit[0] > logit[1] else "not_owl"
-                    start_time = i * 5
-                    end_time = (i + 1) * 5
+                    start_time = (batch_index * batch_size + i) * 5  # Adjusted start time calculation
+                    end_time = start_time + 5
                     # Yield predictions for streaming
-                    if logit[0] > logit[1]:
-                        print("Yielding owl")
-                        yield json.dumps({
-                            "detected": True,
-                            "start_time": start_time,
-                            "end_time": end_time,
-                            "chunk_count": total_batches * 6,
-                        }) + "\n\n"
-                    else:
-                        print("Yielding not_owl")
-                        yield json.dumps({
-                            "detected": False,
-                            "start_time": start_time,
-                            "end_time": end_time,
-                            "chunk_count": total_batches * 6,
-                        }) + "\n\n"
+                    yield json.dumps({
+                        "detected": label == "owl",
+                        "start_time": start_time,
+                        "end_time": end_time,
+                        "chunk_count": total_batches * batch_size,
+                    }) + "\n\n"
 
     # Stream response back to the client
-    resp = Response(generate_predictions_batched(request.files['file'].read()), mimetype='text/event-stream')
+    resp = Response(generate_predictions_batched(file), mimetype='text/event-stream')
     resp.headers['X-Accel-Buffering'] = 'no'
     resp.headers['Cache-Control'] = 'no-cache'
     return resp
