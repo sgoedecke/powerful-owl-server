@@ -41,13 +41,17 @@ def home():
 
 @app.route('/stream_predict', methods=['POST'])
 def stream_predict():
+    print("Begining request...")
     file = request.files['file']  # This is a file-like object.
     
-    def generate_predictions_batched(file_stream):
-        print("Loading...")
-
-        # Load directly from the file-like object without reading into memory
-        audio, _ = librosa.load(file_stream, sr=16000, mono=True, dtype=np.float32)
+    def generate_predictions_batched(file):
+        print("Loading into tmp file...")
+        # Create a temporary file and write the uploaded file's data to it
+        with tempfile.NamedTemporaryFile(delete=True, suffix='.wav') as tmp:
+            file.save(tmp.name)  # Save the uploaded file's data to the temporary file
+            tmp.flush()  # Ensure all data is written to disk
+            audio, sr = librosa.load(tmp.name, sr=16000, mono=True, dtype=np.float32)  # Load the audio data with librosa
+        print("Trimming...")
         num_elements_to_keep = len(audio) - (len(audio) % 80000)  # Trim to nearest 5 seconds
         audio = audio[:num_elements_to_keep]
         print("Reshaping...")
@@ -79,7 +83,7 @@ def stream_predict():
                     }) + "\n\n"
 
     # Stream response back to the client
-    resp = Response(generate_predictions_batched(file.stream), mimetype='text/event-stream')
+    resp = Response(generate_predictions_batched(file), mimetype='text/event-stream')
     resp.headers['X-Accel-Buffering'] = 'no'
     resp.headers['Cache-Control'] = 'no-cache'
     return resp
