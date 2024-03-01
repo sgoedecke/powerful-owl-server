@@ -11,10 +11,8 @@ app.config['MAX_CONTENT_LENGTH'] = 500 * 1024 * 1024
 
 
 # Load your model
-slow_model_name = "sgoedecke/wav2vec2_owl_classifier_v3"
 fast_model_name = "sgoedecke/wav2vec2_owl_classifier_sew_d" # faster, smaller
-slow_classifier = pipeline("audio-classification", model=slow_model_name)
-fast_classifier = pipeline("audio-classification", model=fast_model_name)
+classifier = pipeline("audio-classification", model=fast_model_name)
 
 # hf_client = InferenceClient(model=model_name)
 # classifier = hf_client.audio_classification
@@ -36,49 +34,45 @@ def home():
 
 @app.route('/stream_predict', methods=['POST'])
 def stream_predict():
-    fast = request.form.get('fast', 'false') == 'true'
-    classifier = fast_classifier if fast else slow_classifier
-
-    def generate_predictions(audio_bytes):
-        print("Starting inference...")
+    def generate_predictions_batched(audio_bytes):
         audio = convert_audio_to_wav(audio_bytes)
-        chunks = chunk_audio(audio)
+        samples = np.array(audio.get_array_of_samples())
+        samples = samples.astype(np.float32) / 2**15
+        num_elements_to_keep = len(samples) - (len(samples) % 80000)  # 5-second chunks
+        samples = samples[:num_elements_to_keep]
+        samples = samples.reshape(-1, 80000)  # Reshape samples into 5-second chunks
+        batch_size = 30
+        total_batches = len(samples) // batch_size + (1 if len(samples) % batch_size else 0)  # Calculate total number of batches
 
-        chunk_length_seconds = 5  # Duration of each audio chunk
+        for batch_index in range(total_batches):
+            start_index = batch_index * batch_size
+            end_index = start_index + batch_size
+            inputs = processor(samples[start_index:end_index], sampling_rate=16000, return_tensors="pt", padding=True)
 
-        print("Starting inference on " + str(len(chunks)) + "...")
-        for i, chunk in enumerate(chunks):
-            # Export chunk to bytes
-            buffer = BytesIO()
-            chunk.export(buffer, format="wav")
-            buffer.seek(0)
-
-            # Perform inference
-            chunk_prediction = classifier(buffer.read())#, top_k=1)
-            buffer.close()  # Close buffer after reading
-
-            start_time = i * chunk_length_seconds
-            end_time = start_time + chunk_length_seconds
-            print(f"Predicted {chunk_prediction} from {start_time} to {end_time} seconds.")
-
-            # Yield predictions for streaming
-            if isinstance(chunk_prediction, list) and chunk_prediction[0]['label'] == 'owl':
-                yield json.dumps({
-                    "detected": True,
-                    "start_time": start_time,
-                    "end_time": end_time,
-                    "chunk_count": len(chunks),
-                }) + "\n\n"  # Adding \n\n for easier parsing and to distinguish between messages
-            else:
-                yield json.dumps({
-                    "detected": False,
-                    "start_time": start_time,
-                    "end_time": end_time,
-                    "chunk_count": len(chunks),
-                }) + "\n\n"
+            with torch.no_grad():  # Skip calculating gradients in the forward pass
+                logits = model(inputs.input_values).logits
+                for i, logit in enumerate(logits):
+                    label = "owl" if logit[0] > logit[1] else "not_owl"
+                    start_time = i * 5
+                    end_time = (i + 1) * 5
+                    # Yield predictions for streaming
+                    if logit[0] > logit[1]:
+                        yield json.dumps({
+                            "detected": True,
+                            "start_time": start_time,
+                            "end_time": end_time,
+                            "chunk_count": total_batches * 6,
+                        }) + "\n\n"  # Adding \n\n for easier parsing and to distinguish between messages
+                    else:
+                        yield json.dumps({
+                            "detected": False,
+                            "start_time": start_time,
+                            "end_time": end_time,
+                            "chunk_count": total_batches * 6,
+                        }) + "\n\n"
 
     # Stream response back to the client
-    resp = Response(generate_predictions(request.files['file'].read()), mimetype='text/event-stream')
+    resp = Response(generate_predictions_batched(request.files['file'].read()), mimetype='text/event-stream')
     resp.headers['X-Accel-Buffering'] = 'no'
     resp.headers['Cache-Control'] = 'no-cache'
     return resp

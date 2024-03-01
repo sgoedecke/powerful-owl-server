@@ -89,6 +89,7 @@ import numpy as np
 import torch
 
 #21s
+#3.7s with sew-d!?!?
 def generate_predictions_batched(audio_bytes):
     ts_start = time.time()
     audio = convert_audio_to_wav(audio_bytes)
@@ -100,13 +101,21 @@ def generate_predictions_batched(audio_bytes):
     inputs = processor(samples, sampling_rate=16000, return_tensors="pt", padding=True)
     # 10 OK, 15 not OK
     with torch.no_grad(): # skip calculating grads in forwar dpass
-        logits = model(inputs.input_values[:10]).logits
-        model(inputs.input_values[10:]).logits
+        logits = model(inputs.input_values[:30]).logits
+        # model(inputs.input_values[10:]).logits
     ts_end = time.time()
     print(f"Time taken: {ts_end - ts_start}")
-    return res
+    for i in range(len(logits)):
+        label = ""
+        if logits[i][0] > logits[i][1]:
+            label = "owl"
+        else:
+            label = "not_owl"
+        print(f"Predicted {label} from {i * 5} to {(i + 1) * 5} seconds.")
+    return logits
 
 #37s
+#12s with sew-d
 def generate_predictions_unchunked(audio_bytes):
     ts_start = time.time()
     audio = convert_audio_to_wav(audio_bytes)
@@ -131,4 +140,4 @@ def generate_predictions_unchunked(audio_bytes):
     return res
 
 audio_bytes = '../1owl.m4a'
-generate_predictions('../1owl.m4a')
+generate_predictions_batched('../1owl.m4a')
