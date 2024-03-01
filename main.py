@@ -44,7 +44,8 @@ def home():
 def stream_predict():
     print("Beginning request...")
     file = request.files['file']  # This is a file-like object.
-    
+    print("got file...")
+
     def generate_predictions_batched(file):
         print("Loading into tmp file...")
         # Create a temporary file and write the uploaded file's data to it
