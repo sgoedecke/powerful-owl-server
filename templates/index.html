@@ -92,16 +92,21 @@
             }
             // Process the chunk (value)
             const decoder = new TextDecoder();
-            const text = decoder.decode(value);
+            const raw_text = decoder.decode(value);
 
-            try {
-                const jsonObj = JSON.parse(text);
-                detections.push(jsonObj);
-                raw_chunks.push(jsonObj);
-                chunk_count = jsonObj.chunk_count;
-            } catch (e) {
-                console.error("Error parsing JSON:", e);
-            }
+            const predictions = raw_text.split("\n\n");
+
+            predictions.forEach((text) => {
+                try {
+                    const jsonObj = JSON.parse(text);
+                    detections.push(jsonObj);
+                    raw_chunks.push(jsonObj);
+                    chunk_count = jsonObj.chunk_count;
+                } catch (e) {
+                    console.error("Error parsing JSON:", e);
+                }
+            })
+
 
             detections = mergeEvents(detections);
             renderDetections(detections)
