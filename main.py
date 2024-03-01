@@ -41,10 +41,10 @@ def home():
 @app.route('/stream_predict', methods=['POST'])
 def stream_predict():
     def generate_predictions_batched(audio_bytes):
-        audio = BytesIO(audio_bytes)
+        raw_bytes = BytesIO(audio_bytes)
         print("Loading...")
 
-        audio, _ = librosa.load(audio_file, sr=16000, mono=True, dtype=np.float32)
+        audio, _ = librosa.load(raw_bytes, sr=16000, mono=True, dtype=np.float32)
         num_elements_to_keep = len(audio) - (len(audio) % 80000) # trim to nearest 5 seconds
         audio = audio[:num_elements_to_keep]
         print("Reshaping...")
