@@ -9,6 +9,7 @@ import numpy as np
 from transformers import AutoModelForAudioClassification, Wav2Vec2Processor
 import torch
 import librosa
+import tempfile
 
 
 app = Flask(__name__)
@@ -41,7 +42,7 @@ def home():
 
 @app.route('/stream_predict', methods=['POST'])
 def stream_predict():
-    print("Begining request...")
+    print("Beginning request...")
     file = request.files['file']  # This is a file-like object.
     
     def generate_predictions_batched(file):
