@@ -79,7 +79,7 @@ def stream_predict():
                     }) + "\n\n"
 
     # Stream response back to the client
-    resp = Response(generate_predictions_batched(file), mimetype='text/event-stream')
+    resp = Response(generate_predictions_batched(file.stream), mimetype='text/event-stream')
     resp.headers['X-Accel-Buffering'] = 'no'
     resp.headers['Cache-Control'] = 'no-cache'
     return resp
