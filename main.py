@@ -43,12 +43,13 @@ def home():
 @app.route('/stream_predict', methods=['POST'])
 def stream_predict():
     print("Beginning request...")
-    file = request.files['file']  # This is a file-like object.
+      # This is a file-like object.
     print("got file...")
 
     def generate_predictions_batched(file):
         print("Loading into tmp file...")
         # Create a temporary file and write the uploaded file's data to it
+        file = request.files['file']
         with tempfile.NamedTemporaryFile(delete=True, suffix='.wav') as tmp:
             file.save(tmp.name)  # Save the uploaded file's data to the temporary file
             tmp.flush()  # Ensure all data is written to disk
