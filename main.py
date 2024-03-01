@@ -56,6 +56,7 @@ def stream_predict():
                     end_time = (i + 1) * 5
                     # Yield predictions for streaming
                     if logit[0] > logit[1]:
+                        print("Yielding owl")
                         yield json.dumps({
                             "detected": True,
                             "start_time": start_time,
@@ -63,6 +64,7 @@ def stream_predict():
                             "chunk_count": total_batches * 6,
                         }) + "\n\n"  # Adding \n\n for easier parsing and to distinguish between messages
                     else:
+                        print("Yielding not_owl")
                         yield json.dumps({
                             "detected": False,
                             "start_time": start_time,
