@@ -8,6 +8,8 @@ import json
 import numpy as np
 from transformers import AutoModelForAudioClassification, Wav2Vec2Processor
 import torch
+import librosa
+
 
 app = Flask(__name__)
 app.config['MAX_CONTENT_LENGTH'] = 500 * 1024 * 1024
@@ -24,6 +26,14 @@ def convert_audio_to_wav(audio_bytes):
     audio = audio.set_frame_rate(16000).set_channels(1)
     return audio
 
+def convert_audio_to_wav_librosa(audio_bytes, target_sr=16000):
+    # Create a temporary file to write the audio bytes to
+    with tempfile.NamedTemporaryFile(suffix='.wav', delete=True) as tmp_file:
+        tmp_file.write(audio_bytes)
+        tmp_file.seek(0)  # Go back to the start of the file
+        audio, sr = librosa.load(tmp_file.name, sr=target_sr)
+    return audio
+
 @app.route('/', methods=['GET'])
 def home():
       return render_template('index.html')
@@ -31,12 +41,22 @@ def home():
 @app.route('/stream_predict', methods=['POST'])
 def stream_predict():
     def generate_predictions_batched(audio_bytes):
-        audio = convert_audio_to_wav(audio_bytes)
-        samples = np.array(audio.get_array_of_samples())
-        samples = samples.astype(np.float32) / 2**15
-        num_elements_to_keep = len(samples) - (len(samples) % 80000)  # 5-second chunks
-        samples = samples[:num_elements_to_keep]
-        samples = samples.reshape(-1, 80000)  # Reshape samples into 5-second chunks
+        audio = BytesIO(audio_bytes)
+        print("Loading...")
+
+        audio, _ = librosa.load(audio_file, sr=16000, mono=True, dtype=np.float32)
+        num_elements_to_keep = len(audio) - (len(audio) % 80000) # trim to nearest 5 seconds
+        audio = audio[:num_elements_to_keep]
+        print("Reshaping...")
+
+        samples = audio.reshape(-1, 80000) # Reshape samples into 5-second chunks
+
+        # audio = convert_audio_to_wav(audio_bytes)
+        # samples = np.array(audio.get_array_of_samples())
+        # samples = samples.astype(np.float32) / 2**15
+        # num_elements_to_keep = len(samples) - (len(samples) % 80000)  # 5-second chunks
+        # samples = samples[:num_elements_to_keep]
+        # samples = samples.reshape(-1, 80000)  # Reshape samples into 5-second chunks
         batch_size = 30
         total_batches = len(samples) // batch_size + (1 if len(samples) % batch_size else 0)  # Calculate total number of batches
         print("Batching...")
