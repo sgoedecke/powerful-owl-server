@@ -5,6 +5,7 @@ from io import BytesIO
 import os
 from huggingface_hub import InferenceClient
 import json
+import numpy as np
 
 app = Flask(__name__)
 app.config['MAX_CONTENT_LENGTH'] = 500 * 1024 * 1024
