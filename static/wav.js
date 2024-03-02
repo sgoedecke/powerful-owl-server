@@ -1,6 +1,6 @@
-async function processWavFile(file) {
+async function processWavFile(file, seconds) {
     const header = await readWavHeader(file);
-    const chunkDurationMs = 20 * 1000; // 20 seconds in milliseconds
+    const chunkDurationMs = seconds * 1000; // 20 seconds in milliseconds
     const bytesPerSample = header.bitDepth / 8;
     const frameSize = header.channels * bytesPerSample; // Size of each frame in bytes
     const chunkSize = header.sampleRate * chunkDurationMs / 1000 * frameSize; // Size of each chunk in bytes

@@ -26,6 +26,7 @@
     let detections = [];
     let raw_chunks = [];
     let chunk_count = 0;
+    let chunkSize = 20; // seconds
 
     async function submitForm(formData) {
         detections = [];
@@ -38,7 +39,7 @@
         if (file.type == "audio/wav") {
             document.getElementById('results').innerHTML = 'Chunking WAV audio file...';
 
-            const wavChunks = await processWavFile(file)
+            const wavChunks = await processWavFile(file, chunkSize)
 
 
             for (let i = 0; i < wavChunks.length; i += 1) {
@@ -47,7 +48,7 @@
 
                 const formData = new FormData();
                 formData.append('file', wavChunk);
-                await streamPredictions(formData);
+                await streamPredictions(formData, i, wavChunks.length);
             }
         } else {
             document.getElementById('results').innerHTML = 'Uploading audio file...';
@@ -55,7 +56,7 @@
         }
     }
 
-    function streamPredictions(formData) {
+    function streamPredictions(formData, chunkIndex, chunkCount) {
         fetch('/stream_predict', {
             method: 'POST',
             body: formData,
@@ -70,7 +71,7 @@
         .then(stream => {
             // Handle the stream
             const reader = stream.getReader();
-            readStream(reader);
+            readStream(reader, chunkIndex, chunkCount);
         })
         .catch(error => {
             console.error('Error:', error);
@@ -107,7 +108,7 @@
         document.getElementById('results').innerHTML = html;
     }
 
-    function readStream(reader) {
+    function readStream(reader, chunkIndex, chunkCount) {
         reader.read().then(({ done, value }) => {
             if (done) {
                 console.log('Stream complete');
@@ -123,9 +124,11 @@
             predictions.forEach((text) => {
                 try {
                     const jsonObj = JSON.parse(text);
+                    jsonObj.start_time = jsonObj.start_time + (chunkIndex * chunkSize);
+                    jsonObj.end_time = jsonObj.end_time + (chunkIndex * chunkSize);
                     detections.push(jsonObj);
                     raw_chunks.push(jsonObj);
-                    chunk_count = jsonObj.chunk_count;
+                    chunk_count = chunkCount;
                 } catch (e) {
                     console.error("Error parsing JSON:", e, text);
                 }
