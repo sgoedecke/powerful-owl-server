@@ -24,7 +24,7 @@ def list_files(paths):
     return all_files
 
 files = list_files(sys.argv[1:] )
-print "Processing files: ", files
+print("Processing files: ", files)
 
 # Load your model
 print("Loading classifier model...")
