@@ -29,7 +29,9 @@ print("Processing files: ", files)
 # Load your model
 print("Loading classifier model...")
 model_name = "sgoedecke/wav2vec2_owl_classifier_sew_d" # faster, smaller
-model = AutoModelForAudioClassification.from_pretrained(model_name).to("cuda")
+device = "cuda" if torch.cuda.is_available() else "cpu"
+print("Using device: ", device)
+model = AutoModelForAudioClassification.from_pretrained(model_name).to(device)
 processor = Wav2Vec2Processor.from_pretrained("facebook/wav2vec2-base")
 
 def look_for_owls(file):
