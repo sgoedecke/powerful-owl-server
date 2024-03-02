@@ -5,7 +5,7 @@ from transformers import AutoModelForAudioClassification, Wav2Vec2Processor
 import torch
 import time
 import sys
-import defaultdict
+from collections import defaultdict
 
 if len(sys.argv) < 2:
     print("Usage: python infer.py <paths_to_audio_files>")
