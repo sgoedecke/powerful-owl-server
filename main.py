@@ -45,6 +45,7 @@ def stream_predict():
     print("Beginning request...")
       # This is a file-like object.
     with tempfile.NamedTemporaryFile(delete=True, suffix='.wav') as tmp:
+        file = request.files['file'] 
         file.save(tmp.name)  # Save the uploaded file's data to the temporary file
         tmp.flush()  # Ensure all data is written to disk
         print("Saved to tmp file...")
