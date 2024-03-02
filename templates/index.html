@@ -45,7 +45,7 @@
             const chunkDurationMs = 20 * 1000; // Duration of each chunk in milliseconds
             const chunkSizeInBytes = header.sampleRate * chunkDurationMs / 1000 * frameSize; // Size of each chunk in bytes
 
-            for (let start = 0; start < file.size; start += chunkSize) {
+            for (let start = 0; start < file.size; start += chunkSizeInBytes) {
                 const chunk = file.slice(start, Math.min(file.size, start + chunkSizeInBytes));
                 const formData = new FormData();
                 formData.append('file', chunk);
