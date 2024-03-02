@@ -42,7 +42,7 @@
             // bitDepth: bitDepth
             const bytesPerSample = header.bitDepth / 8;
             const frameSize = header.channels * bytesPerSample; // Size of each frame in bytes
-            const chunkDurationMs = 5000; // Duration of each chunk in milliseconds
+            const chunkDurationMs = 20 * 1000; // Duration of each chunk in milliseconds
             const chunkSizeInBytes = header.sampleRate * chunkDurationMs / 1000 * frameSize; // Size of each chunk in bytes
 
             for (let start = 0; start < file.size; start += chunkSize) {
