@@ -19,6 +19,13 @@ git clone https://github.com/sgoedecke/powerful-owl-server
 cd powerful-owl-server/manual/
 ```
 
+Paste these commands in to install dependencies:
+
+```
+pip install soundfile librosa evaluate transformers pydub
+pip install accelerate -U
+```
+
 Now you need to copy your files over to the server. Open a **new** terminal (not the one you've been using), navigate to where your files are, and run a command like this:
 
 ```
@@ -34,3 +41,5 @@ You should use the directory where your files are instead of `103_BoodjamullaLaw
 Now you get to look for owls! Go back to your original terminal (the one SSHd into your server, that should say something like `ubuntu@104-171-202-77:~/powerful-owl-server/manual` in the prompt), and run this:
 
 `python ./infer.py ~/owls`
+
+There's going to be a lot of text on the screen, some of which will say "warning". Don't worry about it.

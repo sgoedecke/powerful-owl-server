@@ -51,20 +51,26 @@ def look_for_owls(file):
         start_index = batch_index * batch_size
         end_index = start_index + batch_size
         inputs = processor(samples[start_index:end_index], sampling_rate=16000, return_tensors="pt", padding=True)
-        print(f"Done preprocessing batch {batch_index}, calculating logits...")
+        print(f"Done preprocessing batch {batch_index} of {total_batches} for {file}. Calculating logits...")
 
         with torch.no_grad():  # Skip calculating gradients in the forward pass
+            ts_start = time.time()
             logits = model(inputs.input_values).logits
-            print("Calculated logits")
+            ts_end = time.time()
+            print(f"Calculated logits in {ts_end - ts_start} seconds!")
             print(logits)
+            found_owls = False
             for i, logit in enumerate(logits):
                 label = "owl" if logit[0] > logit[1] else "not_owl"
                 start_time = (batch_index * batch_size + i) * 5  # Adjusted start time calculation
                 end_time = start_time + 5
                 # Yield predictions for streaming
                 if label == "owl":
+                    found_owls = True
                     results.append((file, start_time, end_time))
                     print(f"Owl detected at {start_time} - {end_time} seconds!")
+            if not found_owls:
+                print(f"No owls detected in batch.")
     
     print(f"Done processing {file}!")
     return results
