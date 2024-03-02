@@ -44,7 +44,7 @@
                 const wavChunk = await sliceWav(wavFile, start, start+10);
 
                 const formData = new FormData();
-                formData.append('file', chunk);
+                formData.append('file', wavChunk);
                 await streamPredictions(formData);
             }
         } else {
