@@ -47,7 +47,8 @@
             const chunkSizeInBytes = header.sampleRate * chunkDurationMs / 1000 * frameSize; // Size of each chunk in bytes
 
             for (let start = 0; start < file.size; start += chunkSizeInBytes) {
-                const chunk = file.slice(start, Math.min(file.size, start + chunkSizeInBytes));
+                let chunk = file.slice(start, Math.min(file.size, start + chunkSizeInBytes));
+                chunk = createWavChunk(header.buffer, chunk);
                 const formData = new FormData();
                 formData.append('file', chunk);
                 await streamPredictions(formData);
@@ -199,7 +200,8 @@
                 resolve({
                     channels: channels,
                     sampleRate: sampleRate,
-                    bitDepth: bitDepth
+                    bitDepth: bitDepth,
+                    buffer: buffer
                 });
             };
             
@@ -217,6 +219,29 @@
         }
         return result;
     }
+
+    function createWavChunk(originalHeader, audioDataChunk) {
+        // Assuming originalHeader is the ArrayBuffer of the original 44-byte WAV header
+        // and audioDataChunk is a slice of the original WAV file's audio data.
+        
+        // Create a new DataView to modify the header (especially the data chunk size)
+        let headerView = new DataView(originalHeader);
+        
+        // Update the file size in the header
+        // Note: This doesn't account for potential differences in metadata sizes
+        // between chunks. This example assumes header is standard and fixed size.
+        let fileSize = audioDataChunk.size + 44 - 8; // Minus 8 for the header's "RIFF" size field itself
+        headerView.setUint32(4, fileSize, true); // Update file size in header, little endian
+        
+        // Update the data chunk size to match the audioDataChunk's size
+        headerView.setUint32(40, audioDataChunk.size, true); // Update data chunk size, little endian
+        
+        // Combine the modified header with the audio data chunk into a new Blob
+        let combinedChunk = new Blob([headerView, audioDataChunk], {type: 'audio/wav'});
+        
+        return combinedChunk;
+    }
+
 
   </script>
   </body>
