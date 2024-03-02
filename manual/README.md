@@ -54,4 +54,4 @@ File: /home/ubuntu/owls/20210603T080000+1000_Boodjamulla-Lawn-Hill-National-Park
   Start: 01:52:40, End: 01:52:45
 ```
 
-That shows the owl sounds that the model found. Bear in mind that many of these are likely to be false positives, given the current prototype state of the model.
+That shows the owl sounds that the model found. Bear in mind that many of these are likely to be false positives, given the current prototype state of the model - you should listen to them to confirm. But hopefully it lets you rule out tens of hours of data without having to listen to it.
