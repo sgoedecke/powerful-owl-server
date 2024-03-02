@@ -97,7 +97,8 @@ def seconds_to_hms(seconds):
 file_timestamps = defaultdict(list)
 for sublist in data:
     for item in sublist:
-        next if len(item) == 0
+        if len(item) == 0:
+            next
         filename, start, end = item
         file_timestamps[filename].append((start, end))
 
