@@ -222,10 +222,22 @@
 
     function createWavChunk(originalHeader, audioDataChunk) {
         // Assuming originalHeader is the ArrayBuffer of the original 44-byte WAV header
-        // and audioDataChunk is a slice of the original WAV file's audio data.      
+        // Convert originalHeader ArrayBuffer to DataView for easier manipulation
+        let headerView = new DataView(originalHeader.slice(0));
+
+        // Calculate new sizes
+        let fileSize = audioDataChunk.size + 36; // Overall file size minus 8 bytes of RIFF header
+        let dataChunkSize = audioDataChunk.size; // Size of the actual audio data
+
+        // Set fileSize in the RIFF chunk header, offset 4 bytes, 4 bytes long
+        headerView.setUint32(4, fileSize, true);
+
+        // Set dataChunkSize in the data subchunk, offset 40 bytes, 4 bytes long
+        headerView.setUint32(40, dataChunkSize, true);
+
         // Combine the modified header with the audio data chunk into a new Blob
-        let combinedChunk = new Blob([originalHeader, audioDataChunk], {type: 'audio/wav'});
-        
+        let combinedChunk = new Blob([headerView, audioDataChunk], {type: 'audio/wav'});
+
         return combinedChunk;
     }
 
