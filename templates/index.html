@@ -122,6 +122,9 @@
             const predictions = raw_text.split("\n\n");
 
             predictions.forEach((text) => {
+                if (text.length == 0) {
+                    return;
+                }
                 try {
                     const jsonObj = JSON.parse(text);
                     jsonObj.start_time = jsonObj.start_time + (chunkIndex * chunkSize);
@@ -131,6 +134,7 @@
                     chunk_count = chunkCount;
                 } catch (e) {
                     console.error("Error parsing JSON:", e, text);
+                    console.error("Value was: '", text, "'")
                 }
             })
 
