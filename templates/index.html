@@ -46,7 +46,7 @@
             const chunkDurationMs = 20 * 1000; // Duration of each chunk in milliseconds
             const chunkSizeInBytes = header.sampleRate * chunkDurationMs / 1000 * frameSize; // Size of each chunk in bytes
 
-            for (let start = 0; start < file.size; start += chunkSizeInBytes) {
+            for (let start = 44; start < file.size; start += chunkSizeInBytes) { // start at 44 to offset the header
                 let chunk = file.slice(start, Math.min(file.size, start + chunkSizeInBytes));
                 chunk = createWavChunk(header.buffer, chunk);
                 const formData = new FormData();
