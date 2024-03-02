@@ -31,7 +31,7 @@ print("Processing files: ", files)
 print("Loading classifier model...")
 
 model_name = "sgoedecke/wav2vec2_owl_classifier_v3" # larger, slower
-# model_name = "sgoedecke/wav2vec2_owl_classifier_sew_d" # faster, smaller
+# model_name = "sgoedecke/wav2vec2_owl_classifier_sew_d" # about 3x faster, smaller
 device = "cuda" if torch.cuda.is_available() else "cpu"
 print("Using device: ", device)
 model = AutoModelForAudioClassification.from_pretrained(model_name).to(device)
@@ -88,6 +88,7 @@ for file in files:
 
 print("Finished processing all files! ", results)
 print("---------------------------------------------")
+print("Some of these are likely to be false-positives. Please listen to the actual audio segments to confirm.")
 print("Potential owls found:")
 
 # Function to convert seconds to HH:MM:SS format
