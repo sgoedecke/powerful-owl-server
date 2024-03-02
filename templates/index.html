@@ -109,6 +109,7 @@
     }
 
     function readStream(reader, chunkIndex, chunkCount) {
+        chunkIndex = chunkIndex || 0; // if we're not pre-chunking a wav...
         reader.read().then(({ done, value }) => {
             if (done) {
                 console.log('Stream complete');
@@ -127,11 +128,12 @@
                 }
                 try {
                     const jsonObj = JSON.parse(text);
+                    console.log("Parsed JSON:", jsonObj, chunkIndex);
                     jsonObj.start_time = jsonObj.start_time + (chunkIndex * chunkSize);
                     jsonObj.end_time = jsonObj.end_time + (chunkIndex * chunkSize);
                     detections.push(jsonObj);
                     raw_chunks.push(jsonObj);
-                    chunk_count = chunkCount;
+                    chunk_count = chunkCount || jsonObj.chunk_count;
                 } catch (e) {
                     console.error("Error parsing JSON:", e, text);
                     console.error("Value was: '", text, "'")
@@ -142,7 +144,7 @@
             detections = mergeEvents(detections);
             renderDetections(detections)
 
-            console.log(raw_text);
+            console.log("Raw streamed response: ", raw_text);
             // Read the next chunk
             readStream(reader);
         });
