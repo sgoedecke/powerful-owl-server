@@ -77,11 +77,11 @@ def stream_predict():
             start_index = batch_index * batch_size
             end_index = start_index + batch_size
             inputs = processor(samples[start_index:end_index], sampling_rate=16000, return_tensors="pt", padding=True)
-            print("Done processing batch...")
+            print("Done processing batch, canclulating logits...")
 
             with torch.no_grad():  # Skip calculating gradients in the forward pass
                 logits = model(inputs.input_values).logits
-                print("Calculated logits...")
+                print("Calculated logits!")
                 print(logits)
                 for i, logit in enumerate(logits):
                     label = "owl" if logit[0] > logit[1] else "not_owl"
