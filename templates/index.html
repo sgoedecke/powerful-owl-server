@@ -14,6 +14,7 @@
     </form>
     <hr>
     <div id="results"></div>
+  <script src="/static/wav.js"></script>
   <script>
     // Intercept form submission and render the server-sent events
     document.getElementById('owlsForm').addEventListener('submit', function(e) {
@@ -36,19 +37,12 @@
         
         if (file.type == "audio/wav") {
             document.getElementById('results').innerHTML = 'Chunking WAV audio file...';
-            header = await readWavHeader(file);
-            // channels: channels,
-            // sampleRate: sampleRate,
-            // bitDepth: bitDepth
-            console.log("Header:", header)
-            const bytesPerSample = header.bitDepth / 8;
-            const frameSize = header.channels * bytesPerSample; // Size of each frame in bytes
-            const chunkDurationMs = 20 * 1000; // Duration of each chunk in milliseconds
-            const chunkSizeInBytes = header.sampleRate * chunkDurationMs / 1000 * frameSize; // Size of each chunk in bytes
 
-            for (let start = 44; start < file.size; start += chunkSizeInBytes) { // start at 44 to offset the header
-                let chunk = file.slice(start, Math.min(file.size, start + chunkSizeInBytes));
-                chunk = createWavChunk(header.buffer, chunk);
+            const wavFile = await readWav(file)
+            const len = wavFile.getDuration()
+            for (let start = 0; start < len; start += 10) { // start at 44 to offset the header
+                const wavChunk = await sliceWav(wavFile, start, start+10);
+
                 const formData = new FormData();
                 formData.append('file', chunk);
                 await streamPredictions(formData);
@@ -175,73 +169,23 @@
         return mergedEvents;
     }
 
-    function readWavHeader(file) {
+    function readWav(file) {
         return new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            
-            // Only read the first 44 bytes (WAV header length)
-            const blob = file.slice(0, 44);
-            reader.readAsArrayBuffer(blob);
-            
-            reader.onload = function(e) {
-                const buffer = e.target.result;
-                const view = new DataView(buffer);
-                
-                // Ensure this is a RIFF file and it's a WAVE audio file
-                if (readString(view, 0, 4) !== 'RIFF' || readString(view, 8, 4) !== 'WAVE') {
-                    reject(new Error('Not a valid WAV file'));
-                    return;
-                }
-                
-                const channels = view.getUint16(22, true);
-                const sampleRate = view.getUint32(24, true);
-                const bitDepth = view.getUint16(34, true);
-                
-                resolve({
-                    channels: channels,
-                    sampleRate: sampleRate,
-                    bitDepth: bitDepth,
-                    buffer: buffer
-                });
-            };
-            
-            reader.onerror = function(err) {
-                reject(err);
-            };
+            const wavFile = new wav(file)
+            wavFile.onloadend = function() {
+                console.log("WAV file loaded")
+                resolve(this);
+            }
         });
     }
 
-    // Helper function to read strings from a DataView
-    function readString(view, start, length) {
-        let result = '';
-        for (let i = start; i < start + length; i++) {
-            result += String.fromCharCode(view.getUint8(i));
-        }
-        return result;
+    function sliceWav(wavFile, start, end) {
+        return new Promise((resolve, reject) => {
+            wavFile.slice(start, end, function(slice) {
+                resolve(slice);
+            });
+        });
     }
-
-    function createWavChunk(originalHeader, audioDataChunk) {
-        // Assuming originalHeader is the ArrayBuffer of the original 44-byte WAV header
-        // Convert originalHeader ArrayBuffer to DataView for easier manipulation
-        let headerView = new DataView(originalHeader.slice(0));
-
-        // Calculate new sizes
-        let fileSize = audioDataChunk.size + 36; // Overall file size minus 8 bytes of RIFF header
-        let dataChunkSize = audioDataChunk.size; // Size of the actual audio data
-
-        // Set fileSize in the RIFF chunk header, offset 4 bytes, 4 bytes long
-        headerView.setUint32(4, fileSize, true);
-
-        // Set dataChunkSize in the data subchunk, offset 40 bytes, 4 bytes long
-        headerView.setUint32(40, dataChunkSize, true);
-
-        // Combine the modified header with the audio data chunk into a new Blob
-        let combinedChunk = new Blob([headerView, audioDataChunk], {type: 'audio/wav'});
-
-        return combinedChunk;
-    }
-
-
   </script>
   </body>
 </html>
