@@ -38,13 +38,11 @@
         if (file.type == "audio/wav") {
             document.getElementById('results').innerHTML = 'Chunking WAV audio file...';
 
-            const wavFile = await readWav(file)
-            console.log("wav", wavFile)
-            const len = wavFile.getDuration()
-            console.log("len", len)
+            const wavChunks = await processWavFile(file)
 
-            for (let start = 0; start < len; start += 10) { // start at 44 to offset the header
-                const wavChunk = await sliceWav(wavFile, start, start+10);
+
+            for (let i = 0; i < wavChunks.length; i += 1) {
+                const wavChunk = wavChunks[i]
                 console.log("wavChunk", wavChunk)
 
                 const formData = new FormData();
