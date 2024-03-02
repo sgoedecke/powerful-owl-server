@@ -52,7 +52,7 @@ def stream_predict():
         audio, sr = librosa.load(tmp.name, sr=16000, mono=True, dtype=np.float32)  # Load the audio data with librosa
     
     print("Loaded audio")
-    def generate_predictions_batched():
+    def generate_predictions_batched(audio):
         print("Trimming...")
         num_elements_to_keep = len(audio) - (len(audio) % 80000)  # Trim to nearest 5 seconds
         audio = audio[:num_elements_to_keep]
@@ -85,7 +85,7 @@ def stream_predict():
                     }) + "\n\n"
 
     # Stream response back to the client
-    resp = Response(generate_predictions_batched(), mimetype='text/event-stream')
+    resp = Response(generate_predictions_batched(audio), mimetype='text/event-stream')
     resp.headers['X-Accel-Buffering'] = 'no'
     resp.headers['Cache-Control'] = 'no-cache'
     return resp
