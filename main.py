@@ -81,7 +81,7 @@ def stream_predict():
                         "detected": label == "owl",
                         "start_time": start_time,
                         "end_time": end_time,
-                        "chunk_count": total_batches * batch_size,
+                        "chunk_count": len(samples),
                     }) + "\n\n"
 
     # Stream response back to the client
