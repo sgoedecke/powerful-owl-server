@@ -43,15 +43,8 @@ def home():
 @app.route('/stream_predict', methods=['POST'])
 def stream_predict():
     print("Getting file handle...")
-      # This is a file-like object.
-    # with tempfile.NamedTemporaryFile(delete=True, suffix='.wav') as tmp:
-    #     file = request.files['file'] 
-    #     file.save(tmp.name)  # Save the uploaded file's data to the temporary file
-    #     tmp.flush()  # Ensure all data is written to disk
-    #     print("Saved to tmp file...")
-    #     audio, sr = librosa.load(tmp.name, sr=16000, mono=True, dtype=np.float32)  # Load the audio data with librosa
-
-    file = request.files['file'] 
+    # file = request.files['file']  # slow because https://github.com/pallets/werkzeug/issues/875#issuecomment-309779076
+    file = request.stream.read()
     print("Grabbing audio segment...")
 
     audio_segment = AudioSegment.from_file(file)

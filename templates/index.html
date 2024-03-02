@@ -31,10 +31,12 @@
         raw_chunks = []
         chunk_count = 0;
         document.getElementById('results').innerHTML = 'Uploading audio file...';
+        const fileInput = document.getElementById('file');
+        const file = fileInput.files[0];
 
         fetch('/stream_predict', {
             method: 'POST',
-            body: formData,
+            body: file,
         })
         .then(response => {
             if (!response.ok) {
