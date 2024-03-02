@@ -36,15 +36,20 @@
         
         if (file.type == "audio/wav") {
             document.getElementById('results').innerHTML = 'Chunking WAV audio file...';
-            // we can chunk locally
-            const chunkSize = 2 * 1024 * 1024; // 2MB per chunk
-            let offset = 0
-            while (offset < file.size) {
-                const chunk = file.slice(offset, offset + chunkSize);
+            header = await readWavHeader(file);
+            // channels: channels,
+            // sampleRate: sampleRate,
+            // bitDepth: bitDepth
+            const bytesPerSample = header.bitDepth / 8;
+            const frameSize = header.channels * bytesPerSample; // Size of each frame in bytes
+            const chunkDurationMs = 5000; // Duration of each chunk in milliseconds
+            const chunkSizeInBytes = header.sampleRate * chunkDurationMs / 1000 * frameSize; // Size of each chunk in bytes
+
+            for (let start = 0; start < file.size; start += chunkSize) {
+                const chunk = file.slice(start, Math.min(file.size, start + chunkSizeInBytes));
                 const formData = new FormData();
                 formData.append('file', chunk);
                 await streamPredictions(formData);
-                offset += chunkSize;
             }
         } else {
             document.getElementById('results').innerHTML = 'Uploading audio file...';
@@ -166,6 +171,50 @@
         }
 
         return mergedEvents;
+    }
+
+    function readWavHeader(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            
+            // Only read the first 44 bytes (WAV header length)
+            const blob = file.slice(0, 44);
+            reader.readAsArrayBuffer(blob);
+            
+            reader.onload = function(e) {
+                const buffer = e.target.result;
+                const view = new DataView(buffer);
+                
+                // Ensure this is a RIFF file and it's a WAVE audio file
+                if (readString(view, 0, 4) !== 'RIFF' || readString(view, 8, 4) !== 'WAVE') {
+                    reject(new Error('Not a valid WAV file'));
+                    return;
+                }
+                
+                const channels = view.getUint16(22, true);
+                const sampleRate = view.getUint32(24, true);
+                const bitDepth = view.getUint16(34, true);
+                
+                resolve({
+                    channels: channels,
+                    sampleRate: sampleRate,
+                    bitDepth: bitDepth
+                });
+            };
+            
+            reader.onerror = function(err) {
+                reject(err);
+            };
+        });
+    }
+
+    // Helper function to read strings from a DataView
+    function readString(view, start, length) {
+        let result = '';
+        for (let i = start; i < start + length; i++) {
+            result += String.fromCharCode(view.getUint8(i));
+        }
+        return result;
     }
 
   </script>
