@@ -44,13 +44,18 @@ def home():
 def stream_predict():
     print("Beginning request...")
       # This is a file-like object.
-    with tempfile.NamedTemporaryFile(delete=True, suffix='.wav') as tmp:
-        file = request.files['file'] 
-        file.save(tmp.name)  # Save the uploaded file's data to the temporary file
-        tmp.flush()  # Ensure all data is written to disk
-        print("Saved to tmp file...")
-        audio, sr = librosa.load(tmp.name, sr=16000, mono=True, dtype=np.float32)  # Load the audio data with librosa
-    
+    # with tempfile.NamedTemporaryFile(delete=True, suffix='.wav') as tmp:
+    #     file = request.files['file'] 
+    #     file.save(tmp.name)  # Save the uploaded file's data to the temporary file
+    #     tmp.flush()  # Ensure all data is written to disk
+    #     print("Saved to tmp file...")
+    #     audio, sr = librosa.load(tmp.name, sr=16000, mono=True, dtype=np.float32)  # Load the audio data with librosa
+
+    file = request.files['file'] 
+    audio_segment = AudioSegment.from_file(file)
+    audio_segment = audio_segment.set_frame_rate(16000).set_channels(1)
+    audio = np.array(audio_segment.get_array_of_samples(), dtype=np.float32)
+
     print("Loaded audio")
     def generate_predictions_batched(audio):
         print("Trimming...")
