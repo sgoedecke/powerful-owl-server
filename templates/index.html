@@ -43,7 +43,7 @@
                 const chunk = file.slice(offset, offset + chunkSize);
                 const formData = new FormData();
                 formData.append('file', chunk);
-                await streamPredictions(chunk);
+                await streamPredictions(formData);
                 offset += chunkSize;
             }
         } else {
