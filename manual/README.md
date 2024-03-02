@@ -43,3 +43,15 @@ Now you get to look for owls! Go back to your original terminal (the one SSHd in
 `python ./infer.py ~/owls`
 
 There's going to be a lot of text on the screen, some of which will say "warning". Don't worry about it.
+
+At the end, it should print out a results block like this:
+
+```
+---------------------------------------------
+Potential owls found:
+File: /home/ubuntu/owls/20210603T080000+1000_Boodjamulla-Lawn-Hill-National-Park-Dry-B_911228.flac
+  Start: 00:02:00, End: 00:02:05
+  Start: 01:52:40, End: 01:52:45
+```
+
+That shows the owl sounds that the model found. Bear in mind that many of these are likely to be false positives, given the current prototype state of the model.
