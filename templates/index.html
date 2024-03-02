@@ -26,7 +26,7 @@
     let raw_chunks = [];
     let chunk_count = 0;
 
-    function submitForm(formData) {
+    async function submitForm(formData) {
         detections = [];
         raw_chunks = []
         chunk_count = 0;
@@ -43,7 +43,7 @@
                 const chunk = file.slice(offset, offset + chunkSize);
                 const formData = new FormData();
                 formData.append('file', chunk);
-                streamPredictions(chunk);
+                await streamPredictions(chunk);
                 offset += chunkSize;
             }
         } else {
