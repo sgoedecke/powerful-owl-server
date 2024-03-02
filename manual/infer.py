@@ -83,4 +83,29 @@ results = []
 for file in files:
     results.append(look_for_owls(file))
 
-print("Finished processing all files! Owls found:", results)
+print("Finished processing all files! ", results)
+print("Potential owls found:")
+
+# Function to convert seconds to HH:MM:SS format
+def seconds_to_hms(seconds):
+    h = seconds // 3600
+    m = (seconds % 3600) // 60
+    s = (seconds % 3600) % 60
+    return f"{h:02d}:{m:02d}:{s:02d}"
+
+# Grouping timestamp tuples by filename
+file_timestamps = defaultdict(list)
+for sublist in data:
+    for item in sublist:
+        next if len(item) == 0
+        filename, start, end = item
+        file_timestamps[filename].append((start, end))
+
+# Printing timestamps grouped by filename, converted to HH:MM:SS
+for filename, timestamps in file_timestamps.items():
+    print(f"File: {filename}")
+    for start, end in timestamps:
+        start_hms = seconds_to_hms(start)
+        end_hms = seconds_to_hms(end)
+        print(f"  Start: {start_hms}, End: {end_hms}")
+
