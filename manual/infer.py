@@ -96,7 +96,7 @@ def seconds_to_hms(seconds):
 
 # Grouping timestamp tuples by filename
 file_timestamps = defaultdict(list)
-for sublist in data:
+for sublist in results:
     for item in sublist:
         if len(item) == 0:
             next
