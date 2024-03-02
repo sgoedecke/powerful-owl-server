@@ -60,7 +60,7 @@ def look_for_owls(file):
 
         with torch.no_grad():  # Skip calculating gradients in the forward pass
             ts_start = time.time()
-            logits = model(inputs.input_values).logits
+            logits = model(inputs.input_values.to(device)).logits
             ts_end = time.time()
             print(f"Processed {batch_size * 5} seconds of audio in {ts_end - ts_start} seconds.")
             found_owls = False
