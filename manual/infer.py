@@ -29,7 +29,7 @@ print("Processing files: ", files)
 # Load your model
 print("Loading classifier model...")
 model_name = "sgoedecke/wav2vec2_owl_classifier_sew_d" # faster, smaller
-model = AutoModelForAudioClassification.from_pretrained(model_name)
+model = AutoModelForAudioClassification.from_pretrained(model_name).to("cuda")
 processor = Wav2Vec2Processor.from_pretrained("facebook/wav2vec2-base")
 
 def look_for_owls(file):
@@ -41,7 +41,9 @@ def look_for_owls(file):
     num_elements_to_keep = len(audio) - (len(audio) % 80000)  # Trim to nearest 5 seconds
     audio = audio[:num_elements_to_keep]
     samples = audio.reshape(-1, 80000)  # Reshape samples into 5-second chunks
-    # 7.5 seconds to calc logits for batch of 30
+    # 7.5 seconds to calc logits for batch of 30 (5s chunks)
+    # 26 seconds for a batch of 100 (5s chunks). Pretty static. All 29 cores are slammed.
+    # The speed here is basically identical to my shitty DO node??
     batch_size = 100
     total_batches = len(samples) // batch_size + (1 if len(samples) % batch_size else 0)  # Calculate total number of batches
 
@@ -58,8 +60,7 @@ def look_for_owls(file):
             ts_start = time.time()
             logits = model(inputs.input_values).logits
             ts_end = time.time()
-            print(f"Calculated logits in {ts_end - ts_start} seconds!")
-            print(logits)
+            print(f"Processed {batch_size * 5} seconds of audio in {ts_end - ts_start} seconds.")
             found_owls = False
             for i, logit in enumerate(logits):
                 label = "owl" if logit[0] > logit[1] else "not_owl"
