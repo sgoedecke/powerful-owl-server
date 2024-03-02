@@ -59,7 +59,7 @@ def stream_predict():
         print("Reshaping...")
 
         samples = audio.reshape(-1, 80000)  # Reshape samples into 5-second chunks
-        batch_size = 30
+        batch_size = 10 #30 works fine
         total_batches = len(samples) // batch_size + (1 if len(samples) % batch_size else 0)  # Calculate total number of batches
         print("Batching...")
         for batch_index in range(total_batches):
