@@ -45,36 +45,28 @@ def home():
 def stream_predict():
     print("Getting file handle...")
     ts_start = time.time()
-    file = request.files['file']  # slow because https://github.com/pallets/werkzeug/issues/875#issuecomment-309779076 ?
-    # file = request.stream.read()
+    # file = request.files['file']  # 15-17 seconds for 30mb. Slow because https://github.com/pallets/werkzeug/issues/875#issuecomment-309779076 ?
+    file = request.stream.read()
     ts_end = time.time()
     print(f"Time taken: {ts_end - ts_start}")
+
     print("Grabbing audio segment...")
-
     audio_segment = AudioSegment.from_file(file)
-    print("Setting frame rate...")
-
     audio_segment = audio_segment.set_frame_rate(16000).set_channels(1)
-    print("Converting to np.array...")
-
     audio = np.array(audio_segment.get_array_of_samples(), dtype=np.float32)
 
-    print("Loaded audio!")
     def generate_predictions_batched(audio):
-        print("Trimming...")
         num_elements_to_keep = len(audio) - (len(audio) % 80000)  # Trim to nearest 5 seconds
         audio = audio[:num_elements_to_keep]
-        print("Reshaping...")
-
         samples = audio.reshape(-1, 80000)  # Reshape samples into 5-second chunks
         batch_size = 10 #30 works fine
         total_batches = len(samples) // batch_size + (1 if len(samples) % batch_size else 0)  # Calculate total number of batches
-        print("Batching...")
+
         for batch_index in range(total_batches):
             start_index = batch_index * batch_size
             end_index = start_index + batch_size
             inputs = processor(samples[start_index:end_index], sampling_rate=16000, return_tensors="pt", padding=True)
-            print("Done processing batch, canclulating logits...")
+            print("Done processing batch, calculating logits...")
 
             with torch.no_grad():  # Skip calculating gradients in the forward pass
                 logits = model(inputs.input_values).logits
