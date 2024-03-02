@@ -10,6 +10,7 @@ from transformers import AutoModelForAudioClassification, Wav2Vec2Processor
 import torch
 import librosa
 import tempfile
+import time
 
 
 app = Flask(__name__)
@@ -43,8 +44,11 @@ def home():
 @app.route('/stream_predict', methods=['POST'])
 def stream_predict():
     print("Getting file handle...")
-    # file = request.files['file']  # slow because https://github.com/pallets/werkzeug/issues/875#issuecomment-309779076
-    file = request.stream.read()
+    ts_start = time.time()
+    file = request.files['file']  # slow because https://github.com/pallets/werkzeug/issues/875#issuecomment-309779076 ?
+    # file = request.stream.read()
+    ts_end = time.time()
+    print(f"Time taken: {ts_end - ts_start}")
     print("Grabbing audio segment...")
 
     audio_segment = AudioSegment.from_file(file)
