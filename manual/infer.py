@@ -41,7 +41,8 @@ def look_for_owls(file):
     num_elements_to_keep = len(audio) - (len(audio) % 80000)  # Trim to nearest 5 seconds
     audio = audio[:num_elements_to_keep]
     samples = audio.reshape(-1, 80000)  # Reshape samples into 5-second chunks
-    batch_size = 30
+    # 7.5 seconds to calc logits for batch of 30
+    batch_size = 100
     total_batches = len(samples) // batch_size + (1 if len(samples) % batch_size else 0)  # Calculate total number of batches
 
     print(f"Segmented into {len(samples)} chunks in {total_batches} batches...")
