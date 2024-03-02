@@ -45,8 +45,8 @@ def home():
 def stream_predict():
     print("Getting file handle...")
     ts_start = time.time()
-    # file = request.files['file']  # 15-17 seconds for 30mb. Slow because https://github.com/pallets/werkzeug/issues/875#issuecomment-309779076 ?
-    file = request.stream.read()
+    file = request.files['file']  # 15-17 seconds for 30mb. Slow because https://github.com/pallets/werkzeug/issues/875#issuecomment-309779076 ?
+    # file = request.stream.read() # also like 20s. maybe it's just the upload speed
     ts_end = time.time()
     print(f"Time taken: {ts_end - ts_start}")
 

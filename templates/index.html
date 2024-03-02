@@ -30,13 +30,32 @@
         detections = [];
         raw_chunks = []
         chunk_count = 0;
-        document.getElementById('results').innerHTML = 'Uploading audio file...';
+        
         const fileInput = document.getElementById('file');
         const file = fileInput.files[0];
+        
+        if (file.type == "audio/wav") {
+            document.getElementById('results').innerHTML = 'Chunking WAV audio file...';
+            // we can chunk locally
+            const chunkSize = 2 * 1024 * 1024; // 2MB per chunk
+            let offset = 0
+            while (offset < file.size) {
+                const chunk = file.slice(offset, offset + chunkSize);
+                const formData = new FormData();
+                formData.append('file', chunk);
+                streamPredictions(chunk);
+                offset += chunkSize;
+            }
+        } else {
+            document.getElementById('results').innerHTML = 'Uploading audio file...';
+            streamPredictions(formData);
+        }
+    }
 
+    function streamPredictions(formData) {
         fetch('/stream_predict', {
             method: 'POST',
-            body: file//formData,
+            body: formData,
         })
         .then(response => {
             if (!response.ok) {
